@@ -1,6 +1,7 @@
 //全局票据
 const  prefix = 'https://api.weixin.qq.com/cgi-bin/'
 const Promise = require('bluebird') 
+const util = require('./util')
 const request = Promise.promisify(require('request'))
 const api = {
     accessToken:prefix +'token?grant_type=client_credential'
@@ -26,19 +27,19 @@ function Wechat(opts){
 
         if(that.isValidAccessToken(data)){ //是否有限期内
              
-               Promise.resolve(data)
+           return  Promise.resolve(data)
         }else{
             return that.updataAccessToken() 
         }
     })
     .then(data=>{//最终得到的票据    始终获取不到本地数据
-      if(data){
+    //   if(data){
       
         that.access_token = data.access_token 
         that.expires_in = data.expires_in  //有效期
   
         that.saveAccessToken(data)
-      }
+    //   }
      
     })
 }
@@ -82,4 +83,13 @@ Wechat.prototype.updataAccessToken = function () { //请求票据
 
 }
 
+Wechat.prototype.reply = function(){
+   let content = this.body
+   let message = this.weixin
+   let xml = util(content,message) 
+
+   this.status = 200
+   this.type = 'application/xml'
+   this.body = xml
+}
 module.exports =Wechat
