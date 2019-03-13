@@ -8,8 +8,8 @@ const getRawBody = require('raw-body')
 
 
 
-module.exports = function  (params) {
-  //  let wechat = new Wechat(params)//管理票据的更新及存储  实例化构造函数
+module.exports = function  (params,handler) {
+    let wechat = new Wechat(params)//管理票据的更新及存储  实例化构造函数
     return function *(next){
         let that = this;
         console.log(this.query)

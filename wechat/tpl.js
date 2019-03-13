@@ -8,7 +8,7 @@ let tpl = heredoc(function(){
 <xml>
 
 <ToUserName><![CDATA[<%= toUserName %>]]></ToUserName>
-<FromUserName><![CDATA[<%= UserName %>]]></FromUserName>
+<FromUserName><![CDATA[<%= fromUserName %>]]></FromUserName>
 <CreateTime><%= createTime %></CreateTime>
 <MsgType><![CDATA[<%= msgType %>]]></MsgType>
 

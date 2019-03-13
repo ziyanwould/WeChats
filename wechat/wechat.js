@@ -86,7 +86,9 @@ Wechat.prototype.updataAccessToken = function () { //请求票据
 Wechat.prototype.reply = function(){
    let content = this.body
    let message = this.weixin
-   let xml = util(content,message) 
+//    console.log(message)
+   let xml = util.tpl(content,message) 
+  
 
    this.status = 200
    this.type = 'application/xml'
