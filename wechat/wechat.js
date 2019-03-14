@@ -2,9 +2,11 @@
 const  prefix = 'https://api.weixin.qq.com/cgi-bin/'
 const Promise = require('bluebird') 
 const util = require('./util')
+const  fs = require('fs')
 const request = Promise.promisify(require('request'))
 const api = {
-    accessToken:prefix +'token?grant_type=client_credential'
+    accessToken:prefix +'token?grant_type=client_credential',
+    upload: prefix +'media/upload?'
 }
 
 function Wechat(opts){
@@ -13,7 +15,17 @@ function Wechat(opts){
     this.appSecret = opts.appSecret
     this.getAccessToken = opts.getAccessToken
     this.saveAccessToken = opts.saveAccessToken
+    this.fetchAccessToken = opts.fetchAccessToken
 
+
+}
+Wechat.prototype.fetchAccessToken=function(data){
+    let  that = this
+    if(this.access_token && this.expires_in){
+        if(this.isValidAccessToken(this)){
+            return Promise.resolve(this)
+        }
+    }
 
     this.getAccessToken()
     .then(data=>{
@@ -39,11 +51,14 @@ function Wechat(opts){
         that.expires_in = data.expires_in  //有效期
   
         that.saveAccessToken(data)
+
+
+       //返回个数值回去
+        return Promise.resolve(data)
     //   }
      
     })
 }
-
 Wechat.prototype.isValidAccessToken = data=> {
     if(!data || !data.access_token || !data.expires_in){
         return false
@@ -78,6 +93,39 @@ Wechat.prototype.updataAccessToken = function () { //请求票据
         data.expires_in = expires_in
         resolve(data)
       })
+ })
+   
+
+}
+
+//更新临时素材
+Wechat.prototype.uploadMaterial = function (type,filepath) { //传入 文件及文件路径
+    let that = this
+    let form = {
+        media:fs.createReadStream(filepath)
+    }
+
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.upload +'access_token='+data.access_token+'&type='+type   
+        request({method:'POST',url:url,formData:form,json:true}).then(response=>{
+            let _data = response[1]
+            if(_data){
+                resolve(_data)
+            }
+            else{
+             throw new Error('Upload material fails')
+            }
+           
+        })
+        .catch(function(err){
+            reject(err)
+        })
+    })
+
  })
    
 

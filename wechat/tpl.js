@@ -19,37 +19,37 @@ let tpl = heredoc(function(){
 <% } else if (msgType ==='image') {  %>
 
     <Image>
-    <MediaId><![CDATA[<%= conten.media_id %>]]></MediaId>
+    <MediaId><![CDATA[<%= content.mediaId %>]]></MediaId>
   </Image>
 
   <% } else if (msgType ==='voice') {  %>
 
     <Voice>
-    <MediaId><![CDATA[<%= conten.media_id %>]]></MediaId>
+    <MediaId><![CDATA[<%= content.mediaId %>]]></MediaId>
     </Voice>
 
     <% } else if (msgType ==='video') {  %>
 
     <Video>
-    <MediaId><![CDATA[<%= conten.media_id %>]]></MediaId>
-    <Title><![CDATA[<%= conten.title %>]]></Title>
-    <Description><![CDATA[<%= conten.description %>]]></Description>
+    <MediaId><![CDATA[<%= content.mediaId %>]]></MediaId>
+    <Title><![CDATA[<%= content.title %>]]></Title>
+    <Description><![CDATA[<%= content.description %>]]></Description>
   </Video>
 
     <% } else if (msgType ==='music') {  %>
         <Music>
-    <Title><![CDATA<%= conten.title %>]]></Title>
-    <Description><![CDATA[<%= conten.media_id %>]]></Description>
-    <MusicUrl><![CDATA[<%= conten.musicUrl %>]]></MusicUrl>
-    <HQMusicUrl><![CDATA[<%= conten.hqMusicUrl %>]]></HQMusicUrl>
-    <ThumbMediaId><![CDATA[<%= conten.thumbMediaId %>]]></ThumbMediaId>
+    <Title><![CDATA<%= content.title %>]]></Title>
+    <Description><![CDATA[<%= content.mediaId %>]]></Description>
+    <MusicUrl><![CDATA[<%= content.musicUrl %>]]></MusicUrl>
+    <HQMusicUrl><![CDATA[<%= content.hqMusicUrl %>]]></HQMusicUrl>
+    <ThumbMediaId><![CDATA[<%= content.thumbMediaId %>]]></ThumbMediaId>
   </Music>
 
   <% } else if (msgType ==='news') {  %>
 
-    <ArticleCount><%= conten.length %></ArticleCount>
+    <ArticleCount><%= content.length %></ArticleCount>
    <Articles>
-   <% conten.forEach(function(item){%>
+   <% content.forEach(function(item){%>
     <item>
       <Title><![CDATA[<%= item.title %>]]></Title>
       <Description><![CDATA[<%= item.description %>]]></Description>
