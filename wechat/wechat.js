@@ -15,7 +15,7 @@ function Wechat(opts){
     this.appSecret = opts.appSecret
     this.getAccessToken = opts.getAccessToken
     this.saveAccessToken = opts.saveAccessToken
-    this.fetchAccessToken = opts.fetchAccessToken
+    this.fetchAccessToken()
 
 
 }
@@ -112,12 +112,13 @@ Wechat.prototype.uploadMaterial = function (type,filepath) { //传入 文件及�
     .then(data=>{
         let url = api.upload +'access_token='+data.access_token+'&type='+type   
         request({method:'POST',url:url,formData:form,json:true}).then(response=>{
-            let _data = response[1]
+           // console.log(response)
+            let _data = response.body
             if(_data){
                 resolve(_data)
             }
             else{
-             throw new Error('Upload material fails')
+             throw new Error('Upload material fails')//文档已经改变 返回是一个对象不是数组 论监听对象的重要性
             }
            
         })

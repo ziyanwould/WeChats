@@ -69,6 +69,27 @@ exports.reply = function *(next){
                type:'image',
                mediaId:data.media_id
            }
+        }else if(content === '6'){
+            let data = yield wechatApi.uploadMaterial('video',__dirname +'/2.mp4')
+            reply ={
+                type:'video',
+                title:'你想要的视频',
+                description:'梦幻一般',
+                mediaId:data.media_id
+            }
+
+        }else if(content === '7'){
+            let data = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg')
+            reply = {
+                type:'music',
+                title:'这是我喜欢的一段音乐',
+                description:'放松一下',
+                musicUrl:'https://yln212.top/7.mp3',
+                hqMusicUrl:'https://yln212.top/7.mp3',
+                thumbMediaId:data.media_id
+            }
+           
+
         }
 
         this.body=reply
