@@ -1,12 +1,21 @@
 //全局票据
 const  prefix = 'https://api.weixin.qq.com/cgi-bin/'
 const Promise = require('bluebird') 
+const _ = require('lodash')
 const util = require('./util')
 const  fs = require('fs')
 const request = Promise.promisify(require('request'))
 const api = {
     accessToken:prefix +'token?grant_type=client_credential',
-    upload: prefix +'media/upload?'
+  
+    temporary:{ //临时素材
+      upload: prefix +'media/upload?'
+    },
+    permanent:{
+        upload: prefix +'material/add_material?',
+        uploadNews:  prefix +'material/add_news?',
+        uploadNewsPic:  prefix +'media/uploadimg?'
+    }
 }
 
 function Wechat(opts){
@@ -99,18 +108,50 @@ Wechat.prototype.updataAccessToken = function () { //请求票据
 }
 
 //更新临时素材
-Wechat.prototype.uploadMaterial = function (type,filepath) { //传入 文件及文件路径
+Wechat.prototype.uploadMaterial = function (type,material,permanent) { //传入 文件及文件路径  //permanent 是为了更多的参数
     let that = this
-    let form = {
-        media:fs.createReadStream(filepath)
+    let form = {}
+    let uploadUrl = api.temporary.upload
+
+    if(permanent){
+        uploadUrl = api.permanent.upload
+        _.extend(form,permanent)
     }
+    if(type === 'pic'){
+        uploadUrl = api.permanent.uploadNewsPic
+    }
+    if(type === 'news'){
+        uploadUrl = api.permanent.uploadNews
+        form = material
+    }else{
+        form.media=fs.createReadStream(material)
+    }
+    
 
  return new Promise (function(resolve,reject){
     // 拿到全局票据
     that
     .fetchAccessToken()
     .then(data=>{
-        let url = api.upload +'access_token='+data.access_token+'&type='+type   
+        let url = uploadUrl +'access_token='+data.access_token
+        
+        if(!permanent){
+            url += '&type='+type
+        }else{
+           form.access_token = data.access_token 
+        }
+
+        let options ={
+            method:'POST',
+            url:url,
+            json:true
+        }
+
+        if(type === 'news'){
+            options.body = form
+        }else{
+            options.formData = form
+        }
         request({method:'POST',url:url,formData:form,json:true}).then(response=>{
            // console.log(response)
             let _data = response.body

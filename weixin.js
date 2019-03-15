@@ -90,8 +90,27 @@ exports.reply = function *(next){
             }
            
 
-        }
+        } else if(content === '8'){
+            let data = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg',{type:'image'})
+ 
+            reply = {
+                type:'image',
+                mediaId:data.media_id
+            }
+         
+        }else if(content === '9'){
+            let data = yield wechatApi.uploadMaterial('video',__dirname +'/2.mp4',{
+                type:'video',
+                description:'{"title":"Really a nince place ","introduction":"Nerver think it so easy"}'
+            })
+            reply ={
+                type:'video',
+                title:'你想要的视频',
+                description:'梦幻一般 永久上传',
+                mediaId:data.media_id
+            }
 
+        }
         this.body=reply
     }
     yield next
