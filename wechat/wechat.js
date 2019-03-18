@@ -9,12 +9,18 @@ const api = {
     accessToken:prefix +'token?grant_type=client_credential',
   
     temporary:{ //临时素材
-      upload: prefix +'media/upload?'
+      upload: prefix +'media/upload?',
+      fetch:  prefix +'media/get?'
     },
     permanent:{
         upload: prefix +'material/add_material?',
+        fetch:  prefix +'material/get_material?',
         uploadNews:  prefix +'material/add_news?',
-        uploadNewsPic:  prefix +'media/uploadimg?'
+        uploadNewsPic:  prefix +'media/uploadimg?',
+        del:  prefix +'material/del_material?',
+        update:prefix +'material/update_news?',
+        count: prefix +'material/get_materialcount?',//数量
+        batch: prefix +'material/batchget_material?' //列表
     }
 }
 
@@ -152,7 +158,7 @@ Wechat.prototype.uploadMaterial = function (type,material,permanent) { //传入 
         }else{
             options.formData = form
         }
-        request({method:'POST',url:url,formData:form,json:true}).then(response=>{
+        request(options).then(response=>{
            // console.log(response)
             let _data = response.body
             if(_data){
@@ -166,6 +172,210 @@ Wechat.prototype.uploadMaterial = function (type,material,permanent) { //传入 
         .catch(function(err){
             reject(err)
         })
+    })
+
+ })
+   
+
+}
+
+//获取素材 
+Wechat.prototype.fetchMaterial = function (mediaId,type,permanent) { //传入 mediaId  //permanent 是为了更多的参数
+    let that = this
+    let fetchUrl = api.temporary.fetch
+
+    if(permanent){
+        fetchUrl = api.permanent.fetch
+       
+    }
+   
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = fetchUrl +'access_token='+data.access_token + '&media_id=' + mediaId
+        let form = {}
+        let options = {method:'POST',url:url,json:true}
+        if(permanent){
+            form.media_id=mediaId,
+            form.access_token=data.access_token
+            options.body = form
+        }else{
+            if(type === 'video'){
+                url = url.replace('https://','http://')
+            }
+            url += '&media_id' + mediaId
+        }
+       
+        if(type === 'news' || type ==='video'){
+            request(options).then(response=>{
+                // console.log(response)
+                 let _data = response.body
+                 if(_data){
+                     resolve(_data)
+                 }
+                 else{
+                  throw new Error('Delete material fails')
+                 }
+                
+             })
+             .catch(function(err){
+                 reject(err)
+             })
+        }else{
+            resolve(url)
+        }
+
+  
+        // if(!permanent || type === 'video'){
+        //     url = url.replace('https://','http://')
+          
+        // }
+
+        //resolve(url)
+    })
+
+ })
+   
+
+}
+
+//删除素材 
+Wechat.prototype.deleteMaterial = function (mediaId) { //传入 mediaId  //permanent 是为了更多的参数
+    let that = this
+    let form = {
+        media_id:mediaId
+    }
+   
+   
+    
+
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.permanent.del +'access_token='+data.access_token + '&media_id=' + mediaId
+        
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('Delete material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//修改素材 
+Wechat.prototype.updateMaterial = function (mediaId,news) { 
+    let that = this
+    let form = {
+        media_id:mediaId
+    }
+   
+   _.extend(from,news)
+    
+
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.permanent.update +'access_token='+data.access_token + '&media_id=' + mediaId
+        
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('updata material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//数量
+Wechat.prototype.countMaterial = function () { 
+    let that = this
+  
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.permanent.count +'access_token='+data.access_token 
+        
+        request({method:'GET',url:url,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('count material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//列表
+Wechat.prototype.batchMaterial = function (options) { 
+    let that = this
+    options.type = options.type || 'image'
+    options.offset = options.offset || 0
+    options.count = options.count || 1
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.permanent.batch +'access_token='+data.access_token 
+        
+        request({method:'POST',url:url,body:options,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('count material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
     })
 
  })

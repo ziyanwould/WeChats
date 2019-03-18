@@ -111,6 +111,41 @@ exports.reply = function *(next){
             }
 
         }
+        else if(content === '10'){
+            let picData = yield wechatApi.uploadMaterial('video',__dirname +'/2.jpg',{})
+
+            let media = {
+               articles:[{
+                   title:'测试测试',
+                   thumbMediaId:picData.media_id,
+                   author:'ziyanwould',
+                   digest:'没有摘要',
+                   show_cover_pic:1,
+                   content:'没有内容',
+                   content_source_url:'https://github.com'
+
+               }]
+
+              
+            }
+
+          let   data = yield wechatApi.uploadMaterial('news',media,{})
+                data = yield wechatApi.fetchMaterial(data.media_id,'news',{})
+
+            console.log(data)
+            let items = data.news_item 
+            let news = []
+
+            items.forEach(function(item){
+                news.push({
+                    title:item.title,
+                    description:item.digest,
+                    picUrl:picData.url,
+                    url:item.url
+                })
+            })
+               reply = news
+        }
         this.body=reply
     }
     yield next
