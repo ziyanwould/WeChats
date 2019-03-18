@@ -159,7 +159,7 @@ Wechat.prototype.uploadMaterial = function (type,material,permanent) { //传入 
             options.formData = form
         }
         request(options).then(response=>{
-           // console.log(response)
+        //    console.log(response)
             let _data = response.body
             if(_data){
                 resolve(_data)

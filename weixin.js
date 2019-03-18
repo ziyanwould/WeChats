@@ -112,12 +112,12 @@ exports.reply = function *(next){
 
         }
         else if(content === '10'){
-            let picData = yield wechatApi.uploadMaterial('video',__dirname +'/2.jpg',{})
-
+            let picData = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg',{})
+            
             let media = {
-               articles:[{
+                articles:[{
                    title:'测试测试',
-                   thumbMediaId:picData.media_id,
+                   thumb_media_id:picData.media_id,
                    author:'ziyanwould',
                    digest:'没有摘要',
                    show_cover_pic:1,
@@ -129,10 +129,11 @@ exports.reply = function *(next){
               
             }
 
-          let   data = yield wechatApi.uploadMaterial('news',media,{})
-                data = yield wechatApi.fetchMaterial(data.media_id,'news',{})
+          let   datas = yield wechatApi.uploadMaterial('news',media,{})
+         
+           let     data = yield wechatApi.fetchMaterial(datas.media_id,'news',{})
 
-            console.log(data)
+          
             let items = data.news_item 
             let news = []
 
@@ -140,11 +141,40 @@ exports.reply = function *(next){
                 news.push({
                     title:item.title,
                     description:item.digest,
-                    picUrl:picData.url,
+                    picurl:picData.url,
                     url:item.url
                 })
             })
                reply = news
+        }else if(content === '11'){
+         let counts = yield wechatApi.countMaterial()
+
+         console.log(JSON.stringify(counts))
+         let results = yield [
+             wechatApi.batchMaterial({
+                 type:'image',
+                 offset:0,
+                 count:10
+             }),
+             wechatApi.batchMaterial({
+                type:'video',
+                offset:0,
+                count:10
+            }),
+            wechatApi.batchMaterial({
+                type:'voice',
+                offset:0,
+                count:10
+            }),
+            wechatApi.batchMaterial({
+                type:'news',
+                offset:0,
+                count:10
+            }),
+         ]
+        //  console.log(JSON.stringify(results))
+        console.log(results)
+         reply = 1
         }
         this.body=reply
     }
