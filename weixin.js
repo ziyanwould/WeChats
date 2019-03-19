@@ -175,7 +175,49 @@ exports.reply = function *(next){
         //  console.log(JSON.stringify(results))
         console.log(results)
          reply = 1
+        }else if(content === '12'){
+              //let group  = yield wechatApi.createTag('ziyanwould') //创建标签
+              let group = yield wechatApi.batchtaggingTag(['oh4g-1LRE5jyMAzUo5JABQ0zvIMk','oh4g-1KF0_l2THlbspURUVnzprI4','oh4g-1JnqBmTQH9VKAZMpEWC4DEM'],100)
+              console.log('打标签 ')
+              console.log(group)
+
+              let groups = yield wechatApi.fetchTag()
+
+              console.log('最新分组')
+              console.log(groups)
+              let groupqx = yield wechatApi.batchuntaggingTag([message.FromUserName],100)
+              console.log(groupqx)
+              let group2 = yield wechatApi.checkTag(message.FromUserName)
+
+              console.log('查看自己的分组')
+              console.log(group2)
+
+              reply = 'hello world'
+            
+        }else if(content === '13'){
+            let list = yield wechatApi.userTag(100)
+            console.log(list)
+
+            let newTag = yield wechatApi.updateTag(100,'my ziyanwould')
+            console.log(newTag)
+            let groups = yield wechatApi.fetchTag()
+
+            console.log('最新分组')
+            console.log(groups)
+            reply = 'hello world111'
+        }else if(content === '14'){
+             let group  = yield wechatApi.createTag('new tags') //创建标签
+             console.log(group)
+            
+             let del = yield wechatApi.deleteTag(100)
+             console.log(del)
+
+             let groups = yield wechatApi.fetchTag()
+             console.log('最新分组')
+             console.log(groups)
+             reply = 'hello world1114'
         }
+
         this.body=reply
     }
     yield next

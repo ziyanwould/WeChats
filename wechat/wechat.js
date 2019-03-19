@@ -21,6 +21,16 @@ const api = {
         update:prefix +'material/update_news?',
         count: prefix +'material/get_materialcount?',//数量
         batch: prefix +'material/batchget_material?' //列表
+    },
+    group:{//用户管理(标签)
+        create:prefix +'tags/create?',//创建标签
+        fetch:   prefix + 'tags/get?',//获取已经创建标签
+        check: prefix + 'tags/getidlist?',//获取用户标签
+        user: prefix + 'user/tag/get?',//获取标签下粉丝列表
+        update:prefix + 'tags/update?',//编辑标签
+        del: prefix +'tags/delete?',//删除标签
+        batchtagging:prefix +'tags/members/batchtagging?',//批量标签
+        batchuntagging:prefix +'tags/members/batchuntagging?'//批量取消标签
     }
 }
 
@@ -382,6 +392,281 @@ Wechat.prototype.batchMaterial = function (options) {
    
 
 }
+//创建标签
+Wechat.prototype.createTag = function (name) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.create +'access_token='+data.access_token 
+        let form = {
+            tag:{
+                name:name
+            }
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('createGroupMaterial material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+//获取标签
+Wechat.prototype.fetchTag = function () { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.fetch +'access_token='+data.access_token 
+       
+        request({url:url,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('fetchMaterial material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//查看用户哪个标签
+Wechat.prototype.checkTag = function (openId) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.check +'access_token='+data.access_token 
+        let form = {
+            openid:openId
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('checkMaterial material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+
+//批量打标签
+Wechat.prototype.batchtaggingTag = function (openIds,to) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.batchtagging +'access_token='+data.access_token 
+        let form = {
+            openid_list:openIds,
+            tagid:to
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('batchtaggingMaterial material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//批量取消标签
+Wechat.prototype.batchuntaggingTag = function (openIds,to) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.batchuntagging +'access_token='+data.access_token 
+        let form = {
+            openid_list:openIds,
+            tagid:to
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('batchuntagging material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+
+//删除标签
+Wechat.prototype.deleteTag = function (id) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.del +'access_token='+data.access_token 
+        let form = {
+            tag:{        
+                id : id 
+             }
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('deleteTag material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//编辑标签
+Wechat.prototype.updateTag = function (id,name) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.update +'access_token='+data.access_token 
+        let form = {
+            tag:{        
+                id : id ,
+                name:name
+             }
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('updateTag material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//获取标签人数
+Wechat.prototype.userTag = function (id,next_openid) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.group.user +'access_token='+data.access_token 
+        let form = {
+            tagid:id,
+            next_openid:next_openid
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('userTag material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+
+
 
 Wechat.prototype.reply = function(){
    let content = this.body
