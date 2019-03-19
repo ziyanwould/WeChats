@@ -216,6 +216,25 @@ exports.reply = function *(next){
              console.log('最新分组')
              console.log(groups)
              reply = 'hello world1114'
+        }else if(content === '15'){
+          let user = yield wechatApi.fetchUsers(message.FromUserName,'en')
+          console.log(user)
+
+          var openIds = [
+              {
+                  openid:message.FromUserName,
+                  lang:'en'
+              }
+          ]
+          let users = yield wechatApi.fetchUsers(openIds)
+
+          console.log(users)
+
+          reply = JSON.stringify(user)
+        }else if(content === '16'){
+         let userlist = yield wechatApi.listUsers()
+         console.log(userlist)
+         reply = userlist.total
         }
 
         this.body=reply

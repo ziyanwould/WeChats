@@ -31,6 +31,12 @@ const api = {
         del: prefix +'tags/delete?',//删除标签
         batchtagging:prefix +'tags/members/batchtagging?',//批量标签
         batchuntagging:prefix +'tags/members/batchuntagging?'//批量取消标签
+    },
+    user:{
+        remark: prefix +'user/info/updateremark?',//用户备注名
+        fetch:  prefix +'user/info?',//单条
+        batchFetch:prefix +'user/info/batchget?',//多条
+        list:   prefix +'user/get?'
     }
 }
 
@@ -664,6 +670,120 @@ Wechat.prototype.userTag = function (id,next_openid) {
    
 
 }
+
+//给用户名备注
+Wechat.prototype.remarkUser = function (openId,remark) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.user.remark +'access_token='+data.access_token 
+        let form = {
+            openid:openId,
+            remark:remark
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('userTag material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//获取用户基本本信息
+Wechat.prototype.fetchUsers = function (openIds,lang) { 
+    let that = this
+     lang = lang || 'zh_CN'
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+     
+      
+        let options = {
+            json:true
+        }
+        if(_.isArray(openIds)){//._函数可以进行很多判断工作
+            options.url = api.user.batchFetch +'access_token='+data.access_token 
+            options.body ={
+                user_list:openIds
+            }
+            options.method='POST'
+        }else{
+            options.url = api.user.fetch +'access_token='+data.access_token+'&openid='+openIds+'&lang='+lang
+        }
+       
+       
+        request(options).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('fetchUsers material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//获取粉丝
+Wechat.prototype.listUsers = function (openId) { 
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.user.list +'access_token='+data.access_token 
+        if(openId){
+            url +='&next_openid='+openId
+        }
+        request({method:'GET',url:url,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('listUsers material fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
 
 
 
