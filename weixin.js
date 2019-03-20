@@ -2,8 +2,21 @@
 const config = require('./config')
 const Wechat = require('./wechat/wechat')
 const wechatApi = new Wechat(config.wechat)
-exports.reply = function *(next){
+const menu = require('./menu')
+//初始化自定义菜单
+//  let xx = wechatApi.createMenu(menu);
+//  console.log(xx)
+wechatApi.deleteMenu().then(data=>{
+    console.log(data)
+    return wechatApi.createMenu(menu)
+})
+.then(msg=>{
+  console.log(msg)
+})
 
+
+exports.reply = function *(next){
+ 
     let message = this.weixin //事件与普通消息分开
     console.log('message',message)
     if(message.MsgType === 'event'){
@@ -172,12 +185,13 @@ exports.reply = function *(next){
                 count:10
             }),
          ]
-        //  console.log(JSON.stringify(results))
+          console.log(JSON.stringify(results))
         console.log(results)
          reply = 1
         }else if(content === '12'){
-              //let group  = yield wechatApi.createTag('ziyanwould') //创建标签
-              let group = yield wechatApi.batchtaggingTag(['oh4g-1LRE5jyMAzUo5JABQ0zvIMk','oh4g-1KF0_l2THlbspURUVnzprI4','oh4g-1JnqBmTQH9VKAZMpEWC4DEM'],100)
+              let grouptag  = yield wechatApi.createTag('ziyanwould') //创建标签
+              console.log(grouptag)
+              let group = yield wechatApi.batchtaggingTag(['oh4g-1LRE5jyMAzUo5JABQ0zvIMk','oh4g-1KF0_l2THlbspURUVnzprI4','oh4g-1JnqBmTQH9VKAZMpEWC4DEM'],103)
               console.log('打标签 ')
               console.log(group)
 
@@ -231,11 +245,52 @@ exports.reply = function *(next){
           console.log(users)
 
           reply = JSON.stringify(user)
+
         }else if(content === '16'){
+
          let userlist = yield wechatApi.listUsers()
          console.log(userlist)
          reply = userlist.total
-        }
+
+        }else if(content === '17'){
+          let  mpnews = {
+              media_id:'Wfafuq8sdY6UHZIsrlyG-zE5F7GilEZ0F1OGE_14REQ'
+          }
+
+          //群发文本
+        //   let text ={
+        //     "content":"CONTENT"
+        //   }
+        //   let msgData = yield wechatApi.sendByGroup('text',text,103)
+
+
+          let msgData = yield wechatApi.sendByGroup('mpnews',mpnews,103)
+          console.log(msgData)
+          reply = 'hello ziyanwould'
+        }else if(content === '18'){
+            let  mpnews = {
+                media_id:'Wfafuq8sdY6UHZIsrlyG--0Wgtwh1JSvIVryHB83ru4'
+            }
+  
+            //群发文本
+            // let text ={
+            //   "content":"CONTENT"
+            // }
+            // let msgData = yield wechatApi.previewMass('text',text,'oh4g-1KF0_l2THlbspURUVnzprI4')
+  
+  
+            let msgData = yield wechatApi.sendByGroup('mpnews',mpnews,'oh4g-1KF0_l2THlbspURUVnzprI4')
+            console.log(msgData)
+            reply = 'hello ziyanwould'
+          }else if(content === '19'){
+           
+            let msgData = yield wechatApi.checkMass('400958630')
+            console.log(msgData)
+
+           
+
+            reply= '查看消息发送状态'
+          }
 
         this.body=reply
     }

@@ -37,6 +37,20 @@ const api = {
         fetch:  prefix +'user/info?',//单条
         batchFetch:prefix +'user/info/batchget?',//多条
         list:   prefix +'user/get?'
+    },
+    mass:{
+        group: prefix + 'message/mass/sendall?',//分组群发
+        openId: prefix +'message/mass/send?',//通过openId
+        del :   prefix +'message/mass/delete?',//删除
+        preview: prefix +'message/mass/preview?',//预览
+        check:   prefix +'message/mass/get?'//检查发送的状态
+    },
+    menu:{
+        create : prefix + 'menu/create?',
+        get    : prefix + 'menu/get?',
+        del    : prefix + 'menu/delete?',
+        current: prefix + 'get_current_selfmenu_info?'//获取自定义菜单配置接口
+
     }
 }
 
@@ -784,8 +798,326 @@ Wechat.prototype.listUsers = function (openId) {
 
 }
 
+//分组群发 
+Wechat.prototype.sendByGroup = function (type,message,groupId) { //类型 消息 标签ID
+    let that = this
+    let msg = {
+        filter:{},
+        msgtype:type
+    }
+    msg[type] = message
+
+    if(!groupId){
+        msg.filter.is_to_all = true
+    }else{
+        msg.filter = {
+            is_to_all:false,
+            tag_id:groupId
+        }
+    }
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.mass.group +'access_token='+data.access_token 
+    
+        request({method:'POST',url:url,body:msg,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('sendByGroup fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
 
 
+//单发 
+Wechat.prototype.sendByOpenID = function (type,message,openIds) { //类型 消息 标签ID
+    let that = this
+    let msg = {
+      msgtype:type,
+      touser:openIds
+    }
+    msg[type] = message
+
+   
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.mass.openId +'access_token='+data.access_token 
+    
+        request({method:'POST',url:url,body:msg,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('sendByOpenID fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+
+//群删
+Wechat.prototype.deleteMass = function (msgId,article_idx=0) { //类型 消息 标签ID
+    let that = this
+ return new Promise (function(resolve,reject){
+    // 拿到全局票据
+    that
+    .fetchAccessToken()
+    .then(data=>{
+        let url = api.mass.del +'access_token='+data.access_token 
+        let form = {
+            msg_id:msgId,
+            article_idx:article_idx
+        }
+        request({method:'POST',url:url,body:form,json:true}).then(response=>{
+            // console.log(response)
+             let _data = response.body
+             if(_data){
+                 resolve(_data)
+             }
+             else{
+              throw new Error('deleteMass fails')
+             }
+            
+         })
+         .catch(function(err){
+             reject(err)
+         })
+    })
+
+ })
+   
+
+}
+
+//群发预览 
+Wechat.prototype.previewMass = function (type, message ,openId) { //类型 消息 标签ID
+    let that = this
+    let msg = {
+       msgtype:type,
+       touser:openId,
+    }
+    msg[type] = message
+
+
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.mass.preview +'access_token='+data.access_token 
+        
+           request({method:'POST',url:url,body:msg,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('previewMass fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
+
+//检查送达状态
+Wechat.prototype.checkMass = function (msgId) { //类型 消息 标签ID
+    let that = this
+   
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.mass.check +'access_token='+data.access_token 
+           let form = {
+            msg_id:msgId
+        }
+           request({method:'POST',url:url,body:form,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('checkMass fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
+
+
+//创建菜单
+Wechat.prototype.createMenu = function (menu) { 
+    let that = this
+   
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.menu.create +'access_token='+data.access_token 
+       
+           request({method:'POST',url:url,body:menu,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('createMenu fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
+
+
+//获取菜单
+Wechat.prototype.getMenu = function () { 
+    let that = this
+   
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.menu.get +'access_token='+data.access_token 
+       
+           request({url:url,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('getMenu fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
+
+//删除菜单
+Wechat.prototype.deleteMenu = function () { 
+    let that = this
+   
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.menu.del +'access_token='+data.access_token 
+       
+           request({url:url,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('deleteMenu fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
+
+//查询自定义接口
+Wechat.prototype.getCurrentMenu = function () { 
+    let that = this
+   
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.menu.current +'access_token='+data.access_token 
+       
+           request({url:url,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('getCurrentMenu fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
 
 
 Wechat.prototype.reply = function(){
