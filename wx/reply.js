@@ -1,17 +1,18 @@
 'use strict'
-const config = require('./config')
-const Wechat = require('./wechat/wechat')
+const config = require('../config')
+const Wechat = require('../wechat/wechat')
+const path = require('path')
 const wechatApi = new Wechat(config.wechat)
 const menu = require('./menu')
 //初始化自定义菜单
 //  let xx = wechatApi.createMenu(menu);
 //  console.log(xx)
 wechatApi.deleteMenu().then(data=>{
-    console.log(data)
+    console.log('data',data)
     return wechatApi.createMenu(menu)
 })
 .then(msg=>{
-  console.log(msg)
+  console.log(msg)  
 })
 
 
@@ -19,13 +20,15 @@ exports.reply = function *(next){
  
     let message = this.weixin //事件与普通消息分开
     console.log('message',message)
-    if(message.MsgType === 'event'){
-        if(message.Event === 'subscribe'){
-            if(message.EventKey){
-                console.log(`扫描二维码过来：${message.EventKey} ${message.ticket}`)
+    //判断用户行为 是事件推送还是普通消息 先判断的是事件推送
+    if (message.MsgType === 'event') {
+        //订阅事件 分为搜索订阅和二维码订阅
+        if (message.Event === 'subscribe') {
+            if (message.EventKey) {
+                console.log('扫描二维码进来' + message.EventKey + ' ' + message.ticket);
             }
-            console.log(`欢迎你订阅了本订阅号`)
-          
+            //通过this.body设置回复消息
+            //this.body = '欢迎订阅我的公众号';
             this.body =[{
                 title:'终于等到你 能找到这,你一定是一个不一样的人',
                 description:'我的页面',
@@ -39,23 +42,70 @@ exports.reply = function *(next){
                 url:'https://github.com/'
                 
             }]
-          
-            // this.body =`终于等到你 能找到这是一个不一样的人。请按顺序依次回复数字【1】到【9】吧`
-        }else if(message.Event === 'unsubscribe'){
-            console.log(`取消关注a`)
-               
-                this.body=''
-        }else if(message.Event === 'LOCATION'){
-            this.body=`您上报的位置信息是： ${message.Latitude}/${message.Longitude}-${message.Precision}`
-        }else if(message.Event == 'CLICK'){
-            this.body=`你点击了菜单 ${message.EventKey}`
-        }else if(message.Event==='SCAN'){
-            console.log('关注后扫二维码'+message.EventKey +' '+message.Ticket)
-        }else if(message.Event ==='VIEW'){
-            this.body ='您点击了菜单的链接：'+message.EventKey
         }
-      
-    }else if(message.MsgType==='location'){
+        //取消订阅事件
+        else if (message.Event === 'unsubscribe') {
+            console.log('用户取消了关注');
+            this.body = '';
+        }
+        //地理位置事件
+        else if (message.Event === 'LOCATION') {
+            this.body = '您上报的位置是：' + message.Latitude + '/' + message.Longitude + '-' + message.Precision;
+        }
+        //点击事件 自定义菜单事件
+        else if (message.Event === 'CLICK') {
+            this.body = '您点击了菜单：' + message.EventKey;
+        }
+        //跳转链接事件 点击菜单跳转链接时的事件推送
+        else if (message.Event === 'VIEW') {
+            this.body = '您点击了菜单中的链接：' + message.EventKey;
+        }
+        //扫描事件
+        else if (message.Event === 'SCAN') {
+            console.log('关注后扫描二维码' + message.EventKey + ' ' + message.Ticket);
+            this.body = '看到你扫一下哦';
+        }
+        //扫码推送事件
+        else if (message.Event === 'scancode_push') {
+            console.log(message.ScanCodeInfo.ScanType);
+            console.log(message.ScanCodeInfo.ScanResult);
+            this.body = '您点击了菜单中的链接：' + message.EventKey;
+        }
+        //扫码推送
+        else if (message.Event === 'scancode_waitmsg') {
+            console.log(message.ScanCodeInfo.ScanType);
+            console.log(message.ScanCodeInfo.ScanResult);
+            this.body = '您点击了菜单中的：' + message.EventKey;
+        }
+        //弹出系统拍照
+        else if (message.Event === 'pic_sysphoto') {
+            console.log( message.SendPicsInfo.PicList);
+            console.log( message.SendPicsInfo.Count);
+            this.body = '您点击了菜单中的：' + message.EventKey;
+        }
+        //弹出拍照或者相册
+        else if (message.Event === 'pic_photo_or_album') {
+            console.log( message.SendPicsInfo.PicList);
+            console.log( message.SendPicsInfo.Count);
+            this.body = '您点击了菜单中的：' + message.EventKey;
+        }
+        //微信相册发图
+        else if (message.Event === 'pic_weixin') {
+            console.log( message.SendPicsInfo.PicList);
+            console.log( message.SendPicsInfo.Count);
+            this.body = '您点击了菜单中的：' + message.EventKey;
+        }
+        //地理位置选择器
+        else if (message.Event === 'location_select') {
+            console.log(message.SendLocationInfo.Location_X);
+            console.log(message.SendLocationInfo.Location_Y);
+            console.log(message.SendLocationInfo.Scale);
+            console.log(message.SendLocationInfo.Label);
+            console.log(message.SendLocationInfo.Poiname);
+            this.body = '您点击了菜单中的：' + message.EventKey;
+        }
+    }
+    else if(message.MsgType==='location'){
         this.body=`您上报的位置信息是： ${message.Location_X}/${message.Location_Y}-${message.Label}`
     }else if(message.MsgType === 'text'){
         let content = message.Content 
@@ -76,14 +126,14 @@ exports.reply = function *(next){
             }]
         }
         else if(content === '5'){
-           let data = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg')
+           let data = yield wechatApi.uploadMaterial('image',path.join(__dirname, '../2.jpg'))
 
            reply = {
                type:'image',
                mediaId:data.media_id
            }
         }else if(content === '6'){
-            let data = yield wechatApi.uploadMaterial('video',__dirname +'/2.mp4')
+            let data = yield wechatApi.uploadMaterial('video',path.join(__dirname, '../2.mp4'))
             reply ={
                 type:'video',
                 title:'你想要的视频',
@@ -92,7 +142,7 @@ exports.reply = function *(next){
             }
 
         }else if(content === '7'){
-            let data = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg')
+            let data = yield wechatApi.uploadMaterial('image',path.join(__dirname, '../2.jpg'))
             reply = {
                 type:'music',
                 title:'这是我喜欢的一段音乐',
@@ -104,7 +154,7 @@ exports.reply = function *(next){
            
 
         } else if(content === '8'){
-            let data = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg',{type:'image'})
+            let data = yield wechatApi.uploadMaterial('image',path.join(__dirname, '../2.jpg'),{type:'image'})
  
             reply = {
                 type:'image',
@@ -112,7 +162,7 @@ exports.reply = function *(next){
             }
          
         }else if(content === '9'){
-            let data = yield wechatApi.uploadMaterial('video',__dirname +'/2.mp4',{
+            let data = yield wechatApi.uploadMaterial('video',path.join(__dirname, '../2.mp4'),{
                 type:'video',
                 description:'{"title":"Really a nince place ","introduction":"Nerver think it so easy"}'
             })
@@ -125,7 +175,7 @@ exports.reply = function *(next){
 
         }
         else if(content === '10'){
-            let picData = yield wechatApi.uploadMaterial('image',__dirname +'/2.jpg',{})
+            let picData = yield wechatApi.uploadMaterial('image',path.join(__dirname, '../2.jpg'),{})
             
             let media = {
                 articles:[{

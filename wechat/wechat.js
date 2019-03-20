@@ -72,7 +72,7 @@ Wechat.prototype.fetchAccessToken=function(data){
         }
     }
 
-    this.getAccessToken()
+   return this.getAccessToken()
     .then(data=>{
         try{
             data = JSON.parse(data)

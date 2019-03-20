@@ -70,6 +70,9 @@ exports.tpl = function(content,message){
     if(Array.isArray(content)){
         type = 'news'
     }
+    if(!content){
+        content = 'Empty news'
+    }
     //console.log(content)
     type = content.type || type
     info.content =content
