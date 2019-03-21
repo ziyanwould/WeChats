@@ -1,5 +1,6 @@
 //全局票据
 const  prefix = 'https://api.weixin.qq.com/cgi-bin/'
+const  semanticUrl = 'https://api.weixin.qq.com/semantic/semproxy/search?'
 const Promise = require('bluebird') 
 const _ = require('lodash')
 const util = require('./util')
@@ -7,7 +8,7 @@ const  fs = require('fs')
 const request = Promise.promisify(require('request'))
 const api = {
     accessToken:prefix +'token?grant_type=client_credential',
-  
+    semanticUrl:semanticUrl,
     temporary:{ //临时素材
       upload: prefix +'media/upload?',
       fetch:  prefix +'media/get?'
@@ -51,6 +52,10 @@ const api = {
         del    : prefix + 'menu/delete?',
         current: prefix + 'get_current_selfmenu_info?'//获取自定义菜单配置接口
 
+    },
+    ticket:{
+     
+        get :prefix + 'ticket/getticket?'
     }
 }
 
@@ -104,6 +109,43 @@ Wechat.prototype.fetchAccessToken=function(data){
      
     })
 }
+//获取jsapi_ticket
+Wechat.prototype.fetchTicket=function(access_token){
+    let  that = this
+
+
+   return this.getTicket()
+    .then(data=>{
+        try{
+            data = JSON.parse(data)
+         
+        }
+        catch(e){
+            return that.updataTicket(access_token)
+        }
+
+        if(that.isValidTicket(data)){ //是否有限期内
+             
+           return  Promise.resolve(data)
+        }else{
+            return that.updataTicket(access_token) 
+        }
+    })
+    .then(data=>{//最终得到的票据    始终获取不到本地数据
+    //   if(data){
+      
+     
+  
+        that.saveTicket(data)
+
+
+       //返回个数值回去
+        return Promise.resolve(data)
+    //   }
+     
+    })
+}
+
 Wechat.prototype.isValidAccessToken = data=> {
     if(!data || !data.access_token || !data.expires_in){
         return false
@@ -143,6 +185,45 @@ Wechat.prototype.updataAccessToken = function () { //请求票据
 
 }
 
+//sdk 获得jsapi_ticket（有效期7200秒，开发者必须在自己的服务全局缓存jsapi_ticket）
+Wechat.prototype.updataTicket = function () { //请求票据
+
+    let url = api.ticket.get + 'access_token=' + access_token +'&type=jsapi'
+
+    //console.log(appID,appSecret,url)
+
+ return new Promise (function(resolve,reject){
+    request({url:url,json:true}).then(function(response){
+        let data = response.body
+       // console.log('data',data)
+        let now = (new Date().getTime())
+        let expires_in = now + (data.expires_in - 20 ) * 1000 //提前20秒 防止网络延时等因素
+  
+        data.expires_in = expires_in
+        resolve(data)
+      })
+ })
+   
+
+}
+
+//jsapi_ticket 检查是否过期
+Wechat.prototype.isValidTicket = data=> {
+    if(!data || !data.Ticket || !data.expires_in){
+        return false
+    }
+  
+    let Ticket = data.Ticket //票据
+    let expires_in = data.expires_in    //过期时间
+    let now = (new Date().getTime())  //现在时间
+
+    if(Ticket && now < expires_in){
+        return true
+    }else{
+        return false
+    }
+
+}
 //更新临时素材
 Wechat.prototype.uploadMaterial = function (type,material,permanent) { //传入 文件及文件路径  //permanent 是为了更多的参数
     let that = this
@@ -1119,7 +1200,37 @@ Wechat.prototype.getCurrentMenu = function () {
    
    }
 
-
+//语义理解
+Wechat.prototype.semantic = function (semanticData) { 
+    let that = this
+   
+    return new Promise (function(resolve,reject){
+       // 拿到全局票据
+       that
+       .fetchAccessToken()
+       .then(data=>{
+           let url = api.semanticUrl +'access_token='+data.access_token 
+           semanticData.appid = data.appID
+           request({method:'POST',url:url,body:semanticData,json:true}).then(response=>{
+               // console.log(response)
+                let _data = response.body
+                if(_data){
+                    resolve(_data)
+                }
+                else{
+                 throw new Error('semantic fails')
+                }
+               
+            })
+            .catch(function(err){
+                reject(err)
+            })
+       })
+   
+    })
+      
+   
+   }
 Wechat.prototype.reply = function(){
    let content = this.body
    let message = this.weixin

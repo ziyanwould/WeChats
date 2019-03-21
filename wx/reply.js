@@ -7,13 +7,13 @@ const menu = require('./menu')
 //初始化自定义菜单
 //  let xx = wechatApi.createMenu(menu);
 //  console.log(xx)
-wechatApi.deleteMenu().then(data=>{
-    console.log('data',data)
-    return wechatApi.createMenu(menu)
-})
-.then(msg=>{
-  console.log(msg)  
-})
+// wechatApi.deleteMenu().then(data=>{
+//     console.log('data',data)
+//     return wechatApi.createMenu(menu)
+// })
+// .then(msg=>{
+//   console.log(msg)  
+// })
 
 
 exports.reply = function *(next){
@@ -340,6 +340,17 @@ exports.reply = function *(next){
            
 
             reply= '查看消息发送状态'
+          }else if(content === '20'){
+             let semanticData = {
+                "query":"特色小吃",
+                "city":"广州市",
+                "category": "restaurant",
+                "appid":config.wechat.appID,
+                "uid": message.FromUserName
+                }
+             let _semanticData = yield wechatApi.semantic(semanticData)
+
+             reply = JSON.stringify(_semanticData)
           }
 
         this.body=reply
