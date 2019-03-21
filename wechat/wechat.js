@@ -65,6 +65,9 @@ function Wechat(opts){
     this.appSecret = opts.appSecret
     this.getAccessToken = opts.getAccessToken
     this.saveAccessToken = opts.saveAccessToken
+    this.getTicket = opts.getTicket
+    this.saveTicket = opts.saveTicket
+
     this.fetchAccessToken()
 
 
@@ -186,7 +189,7 @@ Wechat.prototype.updataAccessToken = function () { //请求票据
 }
 
 //sdk 获得jsapi_ticket（有效期7200秒，开发者必须在自己的服务全局缓存jsapi_ticket）
-Wechat.prototype.updataTicket = function () { //请求票据
+Wechat.prototype.updataTicket = function (access_token) { //请求票据
 
     let url = api.ticket.get + 'access_token=' + access_token +'&type=jsapi'
 
